@@ -1,82 +1,75 @@
-protolus-data.js
+protolus-data-php
 ===========
 
-A Node.js data layer supporting mysql/mongo/rabbit using a single SQL based query syntax
+A PHP data layer supporting mysql/mongo using a single SQL based query syntax
 
 Usage
 -----
 
-First you'll need to register at least one datasource:
+First you'll need to register at least one datasource in your configuration file:
 
-    var MySQLDatasource = require('protolus-data/sources/mysql');
-    new MySQLDatasource({
-        name : 'maindatabase',
-        host : 'localhost',
-        user : 'dbuser',
-        password : 'P455W0RD',
-        database : 'mysqldbname'
-    });
+    "DB:appdata":{
+        "type":"mysql",
+        "database" : "appdata",
+        "host" : "localhost",
+        "user" : "root",
+        "password" : "",
+        "mode":"mysql",
+        "session":"true",
+        "session_hook":"php"
+    }
     
 
 The basic data pattern looks like:
 
-    var Data = require('protolus-data');
-    var MyObject = Data.Container({
-        initialize : function MyObject(key){
-            this.fields = [
-                'id',
-                'somefield',
-                'anotherfield'
-            ];
-            this.parent({
-                name : 'user',
-                datasource : 'maindatabase'
-            });
-            if(key) this.load(key);
+    class User extends MySQLData{
+        public static $fields = array(
+            'email',
+            'password',
+            'company',
+            'first_name',
+            'last_name',
+            'phone',
+            'address',
+            'city',
+            'state',
+            'zip',
+            'country'
+        );
+
+        public static $name = 'users';
+
+        function __construct($id = null, $field = null){
+            $this->database = 'appdata';
+            $this->tableName = self::$name;
+            parent::__construct($id, $field);
         }
-    });
-    Data.register('MyObject', MyObject);
-    module.exports = MyObject;
+    }
     
 You would use this class like this:
-
-    var MyObject = Data.require('MyObject');
-    var myInstance = new MyObject();
-    myInstance.set('somefield', 'somevalue');
-    myInstance.set('anotherfield', 49);
-    myInstance.save();
     
-And you would search for a set using:
+    $userObj = new User();
+    $userObj->set("first_name", "Joe");
+    $userObj->set("email", "test@example.com");
+    $userObj->save();
 
-    Data.search('MyObject', "somefield == 'searchvalue' || (somefield > 24 && somefield < 38)");
+    $name = $userObj->get("first_name");
     
-or if you only wanted the data payload (not a set of objects)
+And you would search for a set in mysql using:
 
-    Data.query('MyObject', "somefield == 'searchvalue' || (somefield > 24 && somefield < 38)");
+    $users = Data::query("User", "first_name='joe'");
+A search in mongo would look like this:
+    $users = Data::query("User", array("key"=>"first_name", "operator"=>"\=", value"=>"joe"));
     
-One thing to note: This data layer is designed to discourage both streaming data sets and joins while normalizing query syntax across datasources. If you need these features or you find this level of indirection uncomfortable you should probably manipulate the DB directly and skip the whole data layer (or even better, interface with an API). 
-
-Virtuals
---------
-Sometimes you want to address a field as another field (we use this feature with mongo so you can address the primary key as 'id' rather than '_id'), but you want that reference to be symbolic as far as the DB is concerned. This is simply accomplished:
-
-    object.virtualAlias(virtualName, fieldName);
     
 Direct Access
 -------------
 
-Other Datasource specific features (for example MapReduce under mongo) must be accessed from the DB driver which may be accessed directly:
-
-    var Data = require('protolus-data');
-    Data.Source.get('myAwesomeDatasource').connection;
+Other Datasource specific features must be accessed from the DB driver which may be accessed directly:
+    $results = MySQLData::executeSQL("SELECT * FROM USER_TABLE WHERE FIRST_NAME='joe'");
+   
 
 But when you do this you are circumventing the data layer (other than letting protolus negotiate the connection for you).
-
-Testing
--------
-Tests use mocha/should to execute the tests from root
-
-    mocha
 
 If you find any rough edges, please submit a bug!
 
