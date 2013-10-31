@@ -75,4 +75,4 @@ If you find any rough edges, please submit a bug!
 
 Enjoy,
 
--Abbey Hawk Sparrow
+The Protolus Team
