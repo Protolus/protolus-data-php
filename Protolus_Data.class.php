@@ -4,7 +4,7 @@ require(dirname(__FILE__).'/WhereParser.class.php');
 
 class Protolus_Data_Logger{
     public function log($message, $level=0){
-        echo($message."\n");
+        //echo($message."\n");
     }
 }
 
@@ -33,7 +33,7 @@ class Protolus_Data{
     
     public static function datasourceFor($type){
         $type = strtolower($type);
-        //if(!$types[$type]) return false;
+        //echo("[type(".$type."):".print_r(Protolus_Data::$datasources, true)."]");
         if(Protolus_Data::$objectTypes[$type] && !Protolus_Data::$datasources[$type]){
             $type = Protolus_Data::$objectTypes[$type]->datasource;
         }
