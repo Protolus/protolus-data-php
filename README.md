@@ -9,32 +9,34 @@ Usage
 First you'll need to register at least one datasource:
 
     Data::enable('MySQL');
-    new MySQLData(Array(
-        'name' => 'maindatabase',
+    new Protolus_MySQL(Array(
+        'name' => 'maindatabaseid',
         'host' => 'localhost',
         'user' => 'dbuser',
         'password' => 'P455W0RD',
         'database' => 'mysqldbname'
     ));
     
+or 
+
+    Data::enable('Mongo');
+    new Protolus_Mongo(Array(
+        'name' => 'otherdatabaseid',
+        'host' => 'localhost',
+        'database' => 'mongodbname'
+    ));
 
 The basic data pattern looks like:
 
-    class MyObject extends MySQLData{
-        public static $fields = array(
-            'id',
-            'somefield',
-            'anotherfield'
-        );
-
-        public static $name = 'users';
-
-        function __construct($id = null, $field = null){
-            $this->database = 'maindatabase';
-            $this->tableName = self::$name;
-            parent::__construct($id, $field);
+    class MyObject extends Protolus_Data{
+        function __construct(){
+            $this->datasource = 'maindatabaseid';
+            parent::__construct();
         }
     }
+    Protolus_Data::register(MyObject);
+    
+which will store data in the 'User' mysql table
     
 You would use this class like this:
 
@@ -57,7 +59,7 @@ Virtuals
 --------
 Sometimes you want to address a field as another field (we use this feature with mongo so you can address the primary key as 'id' rather than '_id'), but you want that reference to be symbolic as far as the DB is concerned. This is simply accomplished:
 
-    object->virtualAlias(virtualName, fieldName);
+    $myInstance->virtualAlias(virtualName, fieldName);
     
 Direct Access
 -------------
